@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "diamondchestshop",
+  "version": "${version}",
+
+  "name": "Diamond Chest Shop",
+  "description": "Adds chest shops for the diamond economy mod",
+  "authors": [
+    "IAmSneak"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+
+  "license": "MIT",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.gmail.sneakdevs.diamondchestshop.DiamondChestShop"
+    ]
+  },
+  "mixins": [
+    "diamondchestshop.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
