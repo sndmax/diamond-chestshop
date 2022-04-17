@@ -135,7 +135,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                         inventory.setStack(i, new ItemStack(Items.AIR));
                                         if (itemCount < 0) {
                                             ItemStack stack = new ItemStack(sellItem, Math.abs(itemCount));
-                                            stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                            stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                             inventory.setStack(i, stack);
                                             break;
                                         }
@@ -146,7 +146,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                             //give the player the items
                             while (quantity > sellItem.getMaxCount()) {
                                 ItemStack stack = new ItemStack(sellItem, sellItem.getMaxCount());
-                                stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                 ItemEntity itemEntity = player.dropItem(stack, true);
                                 assert itemEntity != null;
                                 itemEntity.resetPickupDelay();
@@ -155,7 +155,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                             }
 
                             ItemStack stack2 = new ItemStack(sellItem, quantity);
-                            stack2.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                            stack2.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                             ItemEntity itemEntity2 = player.dropItem(stack2, true);
                             assert itemEntity2 != null;
                             itemEntity2.resetPickupDelay();
@@ -240,7 +240,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                     player.getInventory().setStack(i, new ItemStack(Items.AIR));
                                     if (itemCount < 0) {
                                         ItemStack stack = new ItemStack(buyItem, Math.abs(itemCount));
-                                        stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                        stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                         player.getInventory().setStack(i, stack);
                                         break;
                                     }
@@ -255,18 +255,18 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                         itemsToAdd += inventory.getStack(i).getCount();
                                         itemsToAdd -= buyItem.getMaxCount();
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount());
-                                        stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                        stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                         inventory.setStack(i, stack);
                                     }
                                     if (inventory.getStack(i).getItem().equals(Items.AIR)) {
                                         itemsToAdd -= buyItem.getMaxCount();
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount());
-                                        stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                        stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                         inventory.setStack(i, stack);
                                     }
                                     if (itemsToAdd < 0) {
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount() + itemsToAdd);
-                                        stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                                        stack.setNbt(DiamondChestShop.getNbtData(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
                                         inventory.setStack(i, stack);
                                         break;
                                     }

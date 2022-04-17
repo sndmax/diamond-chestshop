@@ -1,6 +1,9 @@
 package com.gmail.sneakdevs.diamondchestshop.mixin;
 
+import com.gmail.sneakdevs.diamondchestshop.config.DCSConfig;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.LockableContainerBlockEntityInterface;
+import com.gmail.sneakdevs.diamondeconomy.config.DEConfig;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -68,16 +71,18 @@ public class LockableContainerBlockEntityMixin implements LockableContainerBlock
 
     @Inject(method = "checkUnlocked(Lnet/minecraft/entity/player/PlayerEntity;)Z", at = @At("RETURN"), cancellable = true)
     private void diamondchestshop_checkUnlockedMixin(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValue()) return;
-        if (player.isCreative()) return;
-        if (diamondchestshop_isShop) {
-            if (diamondchestshop_owner.equals(player.getUuidAsString())) {
-                cir.setReturnValue(true);
-                return;
+        if (AutoConfig.getConfigHolder(DCSConfig.class).getConfig().shopProtection) {
+            if (!cir.getReturnValue()) return;
+            if (player.isCreative()) return;
+            if (diamondchestshop_isShop) {
+                if (diamondchestshop_owner.equals(player.getUuidAsString())) {
+                    cir.setReturnValue(true);
+                    return;
+                }
+                System.out.println(diamondchestshop_owner + " : " + player.getUuidAsString() + " : " + diamondchestshop_owner.equals(player.getUuidAsString()));
+                player.sendMessage(new LiteralText("Cannot open another player's shop"), true);
+                cir.setReturnValue(false);
             }
-            System.out.println(diamondchestshop_owner + " : " + player.getUuidAsString() + " : " + diamondchestshop_owner.equals(player.getUuidAsString()));
-            player.sendMessage(new LiteralText("Cannot open another player's shop"), true);
-            cir.setReturnValue(false);
         }
     }
 }
