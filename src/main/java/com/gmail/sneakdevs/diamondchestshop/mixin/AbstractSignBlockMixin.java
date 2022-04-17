@@ -1,11 +1,11 @@
 package com.gmail.sneakdevs.diamondchestshop.mixin;
 
 import com.gmail.sneakdevs.diamondchestshop.DiamondChestShop;
-import com.gmail.sneakdevs.diamondeconomy.DatabaseManager;
-import com.gmail.sneakdevs.diamondeconomy.config.DEConfig;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.ItemEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.LockableContainerBlockEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.SignBlockEntityInterface;
+import com.gmail.sneakdevs.diamondeconomy.DatabaseManager;
+import com.gmail.sneakdevs.diamondeconomy.config.DEConfig;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.*;
@@ -22,7 +22,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -41,7 +40,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Objects;
 
-@Mixin(AbstractSignBlock.class)
+@Mixin(value = AbstractSignBlock.class)
 public abstract class AbstractSignBlockMixin extends BlockWithEntity {
 
     protected AbstractSignBlockMixin(Settings settings) {
@@ -170,7 +169,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                 dm.setBalance(owner, dm.getBalanceFromUUID(owner) + money);
                             }
 
-                            player.sendMessage(new LiteralText("Bought " + quantity + " " + sellItem.getName().getString() + " for " + money + " " + DEConfig.getCurrencyName()), true);
+                            player.sendMessage(new LiteralText("Bought " + quantity + " " + sellItem.getName() + " for " + money + " " + DEConfig.getCurrencyName()), true);
                             return;
                         } catch (NumberFormatException | CommandSyntaxException ignored) {
                             return;
@@ -282,7 +281,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                             }
                             dm.setBalance(player.getUuidAsString(), dm.getBalanceFromUUID(player.getUuidAsString()) + money);
 
-                            player.sendMessage(new LiteralText("Sold " + quantity + " " + buyItem.getName().getString() + " for " + money + " " + DEConfig.getCurrencyName()), true);
+                            player.sendMessage(new LiteralText("Sold " + quantity + " " + buyItem.getName() + " for " + money + " " + DEConfig.getCurrencyName()), true);
                             return;
                         } catch (NumberFormatException | CommandSyntaxException ignored) {
                             return;
