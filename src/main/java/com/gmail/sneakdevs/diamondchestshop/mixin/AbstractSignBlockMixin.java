@@ -99,7 +99,7 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                             Item sellItem = Registry.ITEM.get(Identifier.tryParse(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
 
                             if (dm.getBalanceFromUUID(player.getUuidAsString()) < money) {
-                                player.sendMessage(new LiteralText("You dont have enough money"), true);
+                                player.sendMessage(new LiteralText("You don't have enough money"), true);
                                 return;
                             }
                             if (dm.getBalanceFromUUID(owner) + money >= Integer.MAX_VALUE && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
@@ -203,17 +203,17 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                 player.sendMessage(new LiteralText("You don't have enough of that item"), true);
                                 return;
                             }
-                            int emptyspaces = 0;
+                            int emptySpaces = 0;
                             for (int i = 0; i < shop.size(); i++) {
                                 if (shop.getStack(i).getItem().equals(Items.AIR)) {
-                                    emptyspaces += buyItem.getMaxCount();
+                                    emptySpaces += buyItem.getMaxCount();
                                     continue;
                                 }
                                 if (shop.getStack(i).getItem().equals(buyItem)) {
-                                    emptyspaces += buyItem.getMaxCount() - shop.getStack(i).getCount();
+                                    emptySpaces += buyItem.getMaxCount() - shop.getStack(i).getCount();
                                 }
                             }
-                            if (emptyspaces < quantity) {
+                            if (emptySpaces < quantity) {
                                 player.sendMessage(new LiteralText("The chest is full"), true);
                                 return;
                             }
