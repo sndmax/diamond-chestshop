@@ -8,17 +8,16 @@ import com.gmail.sneakdevs.diamondchestshop.interfaces.LockableContainerBlockEnt
 import com.gmail.sneakdevs.diamondchestshop.interfaces.SignBlockEntityInterface;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.HorizontalFacingBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -109,10 +108,18 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
 
                             //check shop has item in proper quantity
                             if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
+                                Block shopBlock = world.getBlockState(hangingPos).getBlock();
+                                Inventory inventory;
+                                if (shop instanceof ChestBlockEntity && shopBlock instanceof ChestBlock) {
+                                    inventory = ChestBlock.getInventory((ChestBlock)shopBlock, world.getBlockState(hangingPos), world, hangingPos, true);
+                                } else {
+                                    inventory = shop;
+                                }
+
                                 int itemCount = 0;
-                                for (int i = 0; i < shop.size(); i++) {
-                                    if (shop.getStack(i).getItem().equals(sellItem) && (!shop.getStack(i).hasNbt() || shop.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemCount += shop.getStack(i).getCount();
+                                for (int i = 0; i < inventory.size(); i++) {
+                                    if (inventory.getStack(i).getItem().equals(sellItem) && (!inventory.getStack(i).hasNbt() || inventory.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
+                                        itemCount += inventory.getStack(i).getCount();
                                     }
                                 }
                                 if (itemCount < quantity) {
@@ -122,14 +129,14 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
 
                                 //take items from chest
                                 itemCount = quantity;
-                                for (int i = 0; i < shop.size(); i++) {
-                                    if (shop.getStack(i).getItem().equals(sellItem) && (!shop.getStack(i).hasNbt() || shop.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemCount -= shop.getStack(i).getCount();
-                                        shop.setStack(i, new ItemStack(Items.AIR));
+                                for (int i = 0; i < inventory.size(); i++) {
+                                    if (inventory.getStack(i).getItem().equals(sellItem) && (!inventory.getStack(i).hasNbt() || inventory.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
+                                        itemCount -= inventory.getStack(i).getCount();
+                                        inventory.setStack(i, new ItemStack(Items.AIR));
                                         if (itemCount < 0) {
                                             ItemStack stack = new ItemStack(sellItem, Math.abs(itemCount));
                                             stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                            shop.setStack(i, stack);
+                                            inventory.setStack(i, stack);
                                             break;
                                         }
                                     }
@@ -204,13 +211,20 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                                 return;
                             }
                             int emptySpaces = 0;
-                            for (int i = 0; i < shop.size(); i++) {
-                                if (shop.getStack(i).getItem().equals(Items.AIR)) {
+                            Block shopBlock = world.getBlockState(hangingPos).getBlock();
+                            Inventory inventory;
+                            if (shop instanceof ChestBlockEntity && shopBlock instanceof ChestBlock) {
+                                inventory = ChestBlock.getInventory((ChestBlock)shopBlock, world.getBlockState(hangingPos), world, hangingPos, true);
+                            } else {
+                                inventory = shop;
+                            }
+                            for (int i = 0; i < inventory.size(); i++) {
+                                if (inventory.getStack(i).getItem().equals(Items.AIR)) {
                                     emptySpaces += buyItem.getMaxCount();
                                     continue;
                                 }
-                                if (shop.getStack(i).getItem().equals(buyItem)) {
-                                    emptySpaces += buyItem.getMaxCount() - shop.getStack(i).getCount();
+                                if (inventory.getStack(i).getItem().equals(buyItem)) {
+                                    emptySpaces += buyItem.getMaxCount() - inventory.getStack(i).getCount();
                                 }
                             }
                             if (emptySpaces < quantity) {
@@ -236,24 +250,24 @@ public abstract class AbstractSignBlockMixin extends BlockWithEntity {
                             //give the chest the items
                             if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                                 int itemsToAdd = quantity;
-                                for (int i = 0; i < shop.size(); i++) {
-                                    if (shop.getStack(i).getItem().equals(buyItem) && (!shop.getStack(i).hasNbt() || shop.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemsToAdd += shop.getStack(i).getCount();
+                                for (int i = 0; i < inventory.size(); i++) {
+                                    if (inventory.getStack(i).getItem().equals(buyItem) && (!inventory.getStack(i).hasNbt() || inventory.getStack(i).getNbt().asString().equals(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
+                                        itemsToAdd += inventory.getStack(i).getCount();
                                         itemsToAdd -= buyItem.getMaxCount();
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount());
                                         stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        shop.setStack(i, stack);
+                                        inventory.setStack(i, stack);
                                     }
-                                    if (shop.getStack(i).getItem().equals(Items.AIR)) {
+                                    if (inventory.getStack(i).getItem().equals(Items.AIR)) {
                                         itemsToAdd -= buyItem.getMaxCount();
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount());
                                         stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        shop.setStack(i, stack);
+                                        inventory.setStack(i, stack);
                                     }
                                     if (itemsToAdd < 0) {
                                         ItemStack stack = new ItemStack(buyItem, buyItem.getMaxCount() + itemsToAdd);
                                         stack.setNbt(NbtHelper.fromNbtProviderString(((LockableContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        shop.setStack(i, stack);
+                                        inventory.setStack(i, stack);
                                         break;
                                     }
                                 }
