@@ -1,6 +1,6 @@
 package com.gmail.sneakdevs.diamondchestshop;
 
-import com.gmail.sneakdevs.diamondchestshop.config.DEConfig;
+import com.gmail.sneakdevs.diamondeconomy.config.DEConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.shedaniel.autoconfig.AutoConfig;

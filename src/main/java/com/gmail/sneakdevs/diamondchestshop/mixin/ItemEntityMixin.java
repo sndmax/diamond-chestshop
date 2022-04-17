@@ -19,24 +19,27 @@ public class ItemEntityMixin implements ItemEntityInterface {
         this.diamondchestshop_isShop = newVal;
     }
 
-
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void diamondchestshop_tickMixin(CallbackInfo ci) {
-        if (((ItemEntity) (Object) this).world.getBlockEntity(((ItemEntity) (Object) this).getBlockPos().down()) instanceof LockableContainerBlockEntity ||
-                ((ItemEntity) (Object) this).world.getBlockEntity(((ItemEntity) (Object) this).getBlockPos().down(2)) instanceof LockableContainerBlockEntity) {
-            ((ItemEntity) (Object) this).setVelocity(0, 0, 0);
-            if (!canTick) {
-                ci.cancel();
+        if (diamondchestshop_isShop) {
+            if (((ItemEntity) (Object) this).world.getBlockEntity(((ItemEntity) (Object) this).getBlockPos().down()) instanceof LockableContainerBlockEntity ||
+                    ((ItemEntity) (Object) this).world.getBlockEntity(((ItemEntity) (Object) this).getBlockPos().down(2)) instanceof LockableContainerBlockEntity) {
+                ((ItemEntity) (Object) this).setVelocity(0, 0, 0);
+                if (!canTick) {
+                    ci.cancel();
+                }
+                canTick = false;
+            } else {
+                ((ItemEntity) (Object) this).kill();
             }
-            canTick = false;
-        } else {
-            ((ItemEntity) (Object) this).kill();
         }
     }
 
     @Inject(method = "canMerge()Z", at = @At("HEAD"), cancellable = true)
     private void diamondchestshop_canMergeMixin(CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(false);
+        if (diamondchestshop_isShop) {
+            cir.setReturnValue(false);
+        }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
