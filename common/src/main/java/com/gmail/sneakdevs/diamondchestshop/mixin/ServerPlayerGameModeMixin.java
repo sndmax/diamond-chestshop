@@ -92,11 +92,11 @@ public class ServerPlayerGameModeMixin {
             if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                 if (nbt.getString("Text1").contains("sell")) {
                     sellShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
-                    cir.setReturnValue(InteractionResult.PASS);
+                    cir.setReturnValue(InteractionResult.SUCCESS);
                 }
                 if (nbt.getString("Text1").contains("buy")) {
                     buyShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
-                    cir.setReturnValue(InteractionResult.PASS);
+                    cir.setReturnValue(InteractionResult.SUCCESS);
                 }
             }
         }
