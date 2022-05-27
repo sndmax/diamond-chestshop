@@ -41,10 +41,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Objects;
 
-@Mixin(SignBlock.class)
-public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
+@Mixin(value = SignBlock.class, priority =  999)
+public abstract class SignBlockMixin extends BaseEntityBlock {
     
-    protected AbstractSignBlockMixin(Properties properties) {
+    protected SignBlockMixin(Properties properties) {
         super(properties);
     }
 
@@ -82,6 +82,7 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                     ((SignBlockEntityInterface) be).diamondchestshop_setAdminShop(!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop());
                     be.setChanged();
                     player.displayClientMessage(new TextComponent((((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) ? "Created admin shop" : "Removed admin shop"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
                 if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
@@ -99,10 +100,12 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
 
                             if (dm.getBalanceFromUUID(player.getStringUUID()) < money) {
                                 player.displayClientMessage(new TextComponent("You don't have enough money"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
                             if (dm.getBalanceFromUUID(owner) + money >= Integer.MAX_VALUE && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                                 player.displayClientMessage(new TextComponent("The owner is too rich"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
 
@@ -124,6 +127,7 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                                 }
                                 if (itemCount < quantity) {
                                     player.displayClientMessage(new TextComponent("The shop is sold out"), true);
+                                    cir.setReturnValue(InteractionResult.PASS);
                                     return;
                                 }
 
@@ -167,8 +171,10 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                             }
 
                             player.displayClientMessage(new TextComponent("Bought " + quantity + " " + sellItem.getDescription().getString() + " for $" + money), true);
+                            cir.setReturnValue(InteractionResult.PASS);
                             return;
                         } catch (NumberFormatException | CommandSyntaxException ignored) {
+                            cir.setReturnValue(InteractionResult.PASS);
                             return;
                         }
                     }
@@ -187,11 +193,13 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
 
                             if (dm.getBalanceFromUUID(owner) < money && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                                 player.displayClientMessage(new TextComponent("The owner hasn't got enough money"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
 
                             if (dm.getBalanceFromUUID(player.getStringUUID()) + money >= Integer.MAX_VALUE) {
                                 player.displayClientMessage(new TextComponent("You are too rich"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
 
@@ -204,6 +212,7 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                             }
                             if (itemCount < quantity) {
                                 player.displayClientMessage(new TextComponent("You don't have enough of that item"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
                             int emptySpaces = 0;
@@ -225,6 +234,7 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                             }
                             if (emptySpaces < quantity) {
                                 player.displayClientMessage(new TextComponent("The chest is full"), true);
+                                cir.setReturnValue(InteractionResult.PASS);
                                 return;
                             }
 
@@ -275,8 +285,10 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                             dm.setBalance(player.getStringUUID(), dm.getBalanceFromUUID(player.getStringUUID()) + money);
 
                             player.displayClientMessage(new TextComponent("Sold " + quantity + " " + buyItem.getDescription().getString() + " for $" + money), true);
+                            cir.setReturnValue(InteractionResult.PASS);
                             return;
                         } catch (NumberFormatException | CommandSyntaxException ignored) {
+                            cir.setReturnValue(InteractionResult.PASS);
                             return;
                         }
                     }
@@ -287,32 +299,38 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
             if (item.equals(Registry.ITEM.get(ResourceLocation.tryParse(DiamondEconomyConfig.getInstance().currencies[0])))) {
                 if (nbt.getBoolean("diamondchestshop_IsShop")) {
                     player.displayClientMessage(new TextComponent("This is already a shop"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
                 BlockPos hangingPos = pos.offset(state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepX(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepY(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepZ());
                 if (!(world.getBlockEntity(hangingPos) instanceof BaseContainerBlockEntity shop && world.getBlockEntity(hangingPos) instanceof RandomizableContainerBlockEntity)) {
                     player.displayClientMessage(new TextComponent("Sign must be on a valid container"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
                 if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || !((BaseContainerBlockEntityInterface) shop).diamondchestshop_getOwner().equals(player.getStringUUID())) {
                     player.displayClientMessage(new TextComponent("You must have placed down the sign and chest"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
                 if (player.getOffhandItem().getItem().equals(Items.AIR)) {
                     player.displayClientMessage(new TextComponent("The sell item must be in your offhand"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
                 if (!(DiamondChestShop.signTextToReadable(nbt.getString("Text1")).equals("sell") || DiamondChestShop.signTextToReadable(nbt.getString("Text1")).equals("buy"))) {
                     player.displayClientMessage(new TextComponent("The first line must be either \"Buy\" or \"Sell\""), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
                 if (((BaseContainerBlockEntityInterface) shop).diamondchestshop_getShop()) {
                     player.displayClientMessage(new TextComponent("That chest already is a shop"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
 
@@ -342,17 +360,19 @@ public abstract class AbstractSignBlockMixin extends BaseEntityBlock {
                             ((ItemEntityInterface) itemEntity).diamondchestshop_setShop(true);
                             world.addFreshEntity(itemEntity);
                             ((SignBlockEntityInterface) be).diamondchestshop_setItemEntity(itemEntity.getUUID());
-
                             player.displayClientMessage(new TextComponent("Created shop with " + quantity + " " + player.getOffhandItem().getItem().getDescription().getString() + (((nbt.getString("Text1")).contains("sell")) ? " sold for $" : " bought for $") + money), true);
+                            cir.setReturnValue(InteractionResult.PASS);
                         } else {
                             player.displayClientMessage(new TextComponent("Positive quantity required"), true);
+                            cir.setReturnValue(InteractionResult.PASS);
                         }
                     } else {
                         player.displayClientMessage(new TextComponent("Negative prices are not allowed"), true);
-
+                        cir.setReturnValue(InteractionResult.PASS);
                     }
                 } catch (NumberFormatException ignored) {
                     player.displayClientMessage(new TextComponent("The second and third lines must be numbers (quantity then money)"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
                 }
             }
         }

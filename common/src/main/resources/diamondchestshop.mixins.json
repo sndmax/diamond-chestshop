@@ -4,12 +4,12 @@
   "package": "com.gmail.sneakdevs.diamondchestshop.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "AbstractSignBlockMixin",
+    "SignBlockMixin",
     "BaseContainerBlockEntityMixin",
     "BlockItemMixin",
     "HopperBlockEntityMixin",
     "ItemEntityMixin",
-    "ServerPlayerInteractionManagerMixin",
+    "ServerPlayerGameModeMixin",
     "SignBlockEntityMixin"
   ],
   "injectors": {
