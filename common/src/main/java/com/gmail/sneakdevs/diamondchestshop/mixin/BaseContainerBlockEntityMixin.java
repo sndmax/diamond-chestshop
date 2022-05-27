@@ -78,7 +78,6 @@ public class BaseContainerBlockEntityMixin implements BaseContainerBlockEntityIn
                     cir.setReturnValue(true);
                     return;
                 }
-                System.out.println(diamondchestshop_owner + " : " + player.getStringUUID() + " : " + diamondchestshop_owner.equals(player.getStringUUID()));
                 player.displayClientMessage(new TextComponent("Cannot open another player's shop"), true);
                 cir.setReturnValue(false);
             }

@@ -10,5 +10,5 @@ public class DiamondChestShopFabric implements ModInitializer {
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> ChestshopCommand.register(dispatcher));
         DiamondChestShop.init();
-        }
+    }
 }

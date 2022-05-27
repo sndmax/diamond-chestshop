@@ -4,19 +4,14 @@ import com.gmail.sneakdevs.diamondchestshop.DiamondChestShop;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.BaseContainerBlockEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.ItemEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.SignBlockEntityInterface;
-import com.gmail.sneakdevs.diamondeconomy.DiamondEconomy;
 import com.gmail.sneakdevs.diamondeconomy.config.DiamondEconomyConfig;
-import com.gmail.sneakdevs.diamondeconomy.sql.DatabaseManager;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,10 +19,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -41,7 +37,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Objects;
 
-@Mixin(value = SignBlock.class, priority =  999)
+@Mixin(value = SignBlock.class, priority = 999)
 public abstract class SignBlockMixin extends BaseEntityBlock {
     
     protected SignBlockMixin(Properties properties) {
@@ -84,214 +80,6 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                     player.displayClientMessage(new TextComponent((((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) ? "Created admin shop" : "Removed admin shop"), true);
                     cir.setReturnValue(InteractionResult.PASS);
                     return;
-                }
-                if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                    //sell shops
-                    if (DiamondChestShop.signTextToReadable(nbt.getString("Text1")).contains("sell")) {
-                        try {
-                            int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text2")));
-                            int money = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text3")));
-                            DatabaseManager dm = DiamondEconomy.getDatabaseManager();
-                            BlockPos hangingPos = pos.offset(state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepX(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepY(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepZ());
-                            RandomizableContainerBlockEntity shop = (RandomizableContainerBlockEntity) world.getBlockEntity(hangingPos);
-                            assert shop != null;
-                            String owner = ((BaseContainerBlockEntityInterface) shop).diamondchestshop_getOwner();
-                            Item sellItem = Registry.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
-
-                            if (dm.getBalanceFromUUID(player.getStringUUID()) < money) {
-                                player.displayClientMessage(new TextComponent("You don't have enough money"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-                            if (dm.getBalanceFromUUID(owner) + money >= Integer.MAX_VALUE && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                player.displayClientMessage(new TextComponent("The owner is too rich"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-
-                            //check shop has item in proper quantity
-                            if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                Block shopBlock = world.getBlockState(hangingPos).getBlock();
-                                Container inventory;
-                                if (shop instanceof ChestBlockEntity && shopBlock instanceof ChestBlock) {
-                                    inventory = ChestBlock.getContainer((ChestBlock)shopBlock, world.getBlockState(hangingPos), world, hangingPos, true);
-                                } else {
-                                    inventory = shop;
-                                }
-
-                                int itemCount = 0;
-                                for (int i = 0; i < inventory.getContainerSize(); i++) {
-                                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemCount += inventory.getItem(i).getCount();
-                                    }
-                                }
-                                if (itemCount < quantity) {
-                                    player.displayClientMessage(new TextComponent("The shop is sold out"), true);
-                                    cir.setReturnValue(InteractionResult.PASS);
-                                    return;
-                                }
-
-                                //take items from chest
-                                itemCount = quantity;
-                                for (int i = 0; i < inventory.getContainerSize(); i++) {
-                                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemCount -= inventory.getItem(i).getCount();
-                                        inventory.setItem(i, new ItemStack(Items.AIR));
-                                        if (itemCount < 0) {
-                                            ItemStack stack = new ItemStack(sellItem, Math.abs(itemCount));
-                                            stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                            inventory.setItem(i, stack);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            //give the player the items
-                            while (quantity > sellItem.getMaxStackSize()) {
-                                ItemStack stack = new ItemStack(sellItem, sellItem.getMaxStackSize());
-                                stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                ItemEntity itemEntity = player.drop(stack, true);
-                                assert itemEntity != null;
-                                itemEntity.setNoPickUpDelay();
-                                itemEntity.setOwner(player.getUUID());
-                                quantity -= sellItem.getMaxStackSize();
-                            }
-
-                            ItemStack stack2 = new ItemStack(sellItem, quantity);
-                            stack2.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                            ItemEntity itemEntity2 = player.drop(stack2, true);
-                            assert itemEntity2 != null;
-                            itemEntity2.setNoPickUpDelay();
-                            itemEntity2.setOwner(player.getUUID());
-
-                            dm.setBalance(player.getStringUUID(), dm.getBalanceFromUUID(player.getStringUUID()) - money);
-                            if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                dm.setBalance(owner, dm.getBalanceFromUUID(owner) + money);
-                            }
-
-                            player.displayClientMessage(new TextComponent("Bought " + quantity + " " + sellItem.getDescription().getString() + " for $" + money), true);
-                            cir.setReturnValue(InteractionResult.PASS);
-                            return;
-                        } catch (NumberFormatException | CommandSyntaxException ignored) {
-                            cir.setReturnValue(InteractionResult.PASS);
-                            return;
-                        }
-                    }
-
-                    //buy shops
-                    if (DiamondChestShop.signTextToReadable(nbt.getString("Text1")).contains("buy")) {
-                        try {
-                            int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text2")));
-                            int money = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text3")));
-                            DatabaseManager dm = DiamondEconomy.getDatabaseManager();
-                            BlockPos hangingPos = pos.offset(state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepX(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepY(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepZ());
-                            RandomizableContainerBlockEntity shop = (RandomizableContainerBlockEntity) world.getBlockEntity(hangingPos);
-                            assert shop != null;
-                            String owner = ((BaseContainerBlockEntityInterface) shop).diamondchestshop_getOwner();
-                            Item buyItem = Registry.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
-
-                            if (dm.getBalanceFromUUID(owner) < money && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                player.displayClientMessage(new TextComponent("The owner hasn't got enough money"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-
-                            if (dm.getBalanceFromUUID(player.getStringUUID()) + money >= Integer.MAX_VALUE) {
-                                player.displayClientMessage(new TextComponent("You are too rich"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-
-                            //check player has item in proper quantity
-                            int itemCount = 0;
-                            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                                if (player.getInventory().getItem(i).getItem().equals(buyItem) && (!player.getInventory().getItem(i).hasTag() || player.getInventory().getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                    itemCount += player.getInventory().getItem(i).getCount();
-                                }
-                            }
-                            if (itemCount < quantity) {
-                                player.displayClientMessage(new TextComponent("You don't have enough of that item"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-                            int emptySpaces = 0;
-                            Block shopBlock = world.getBlockState(hangingPos).getBlock();
-                            Container inventory;
-                            if (shop instanceof ChestBlockEntity && shopBlock instanceof ChestBlock) {
-                                inventory = ChestBlock.getContainer((ChestBlock)shopBlock, world.getBlockState(hangingPos), world, hangingPos, true);
-                            } else {
-                                inventory = shop;
-                            }
-                            for (int i = 0; i < inventory.getContainerSize(); i++) {
-                                if (inventory.getItem(i).getItem().equals(Items.AIR)) {
-                                    emptySpaces += buyItem.getMaxStackSize();
-                                    continue;
-                                }
-                                if (inventory.getItem(i).getItem().equals(buyItem)) {
-                                    emptySpaces += buyItem.getMaxStackSize() - inventory.getItem(i).getCount();
-                                }
-                            }
-                            if (emptySpaces < quantity) {
-                                player.displayClientMessage(new TextComponent("The chest is full"), true);
-                                cir.setReturnValue(InteractionResult.PASS);
-                                return;
-                            }
-
-                            //take items from player
-                            itemCount = quantity;
-                            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                                if (player.getInventory().getItem(i).getItem().equals(buyItem) && (!player.getInventory().getItem(i).hasTag() || player.getInventory().getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                    itemCount -= player.getInventory().getItem(i).getCount();
-                                    player.getInventory().setItem(i, new ItemStack(Items.AIR));
-                                    if (itemCount < 0) {
-                                        ItemStack stack = new ItemStack(buyItem, Math.abs(itemCount));
-                                        stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        player.getInventory().setItem(i, stack);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            //give the chest the items
-                            if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                int itemsToAdd = quantity;
-                                for (int i = 0; i < inventory.getContainerSize(); i++) {
-                                    if (inventory.getItem(i).getItem().equals(buyItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
-                                        itemsToAdd += inventory.getItem(i).getCount();
-                                        itemsToAdd -= buyItem.getMaxStackSize();
-                                        ItemStack stack = new ItemStack(buyItem, buyItem.getMaxStackSize());
-                                        stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        inventory.setItem(i, stack);
-                                    }
-                                    if (inventory.getItem(i).getItem().equals(Items.AIR)) {
-                                        itemsToAdd -= buyItem.getMaxStackSize();
-                                        ItemStack stack = new ItemStack(buyItem, buyItem.getMaxStackSize());
-                                        stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        inventory.setItem(i, stack);
-                                    }
-                                    if (itemsToAdd < 0) {
-                                        ItemStack stack = new ItemStack(buyItem, buyItem.getMaxStackSize() + itemsToAdd);
-                                        stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                                        inventory.setItem(i, stack);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                                dm.setBalance(owner, dm.getBalanceFromUUID(owner) - money);
-                            }
-                            dm.setBalance(player.getStringUUID(), dm.getBalanceFromUUID(player.getStringUUID()) + money);
-
-                            player.displayClientMessage(new TextComponent("Sold " + quantity + " " + buyItem.getDescription().getString() + " for $" + money), true);
-                            cir.setReturnValue(InteractionResult.PASS);
-                            return;
-                        } catch (NumberFormatException | CommandSyntaxException ignored) {
-                            cir.setReturnValue(InteractionResult.PASS);
-                            return;
-                        }
-                    }
                 }
             }
 
