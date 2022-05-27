@@ -63,7 +63,7 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
         }
     }
 
-    @Inject(method = "use", at = @At("HEAD"))
+    @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void diamondchestshop_useMixin(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> cir) {
         if (!world.isClientSide()) {
             ItemStack itemStack = player.getItemInHand(hand);
