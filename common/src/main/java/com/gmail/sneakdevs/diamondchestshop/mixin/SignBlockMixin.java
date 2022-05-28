@@ -129,11 +129,15 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                         if (money >= 0) {
                             ((SignBlockEntityInterface) be).diamondchestshop_setShop(true);
                             ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setShop(true);
-                            ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setItem(Registry.ITEM.getKey(player.getOffhandItem().getItem()).toString());
+                            String itemStr = Registry.ITEM.getKey(player.getOffhandItem().getItem()).toString();
+                            ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setItem(itemStr);
                             try {
-                                ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setTag(player.getOffhandItem().getTag().getAsString());
+                                String tag = player.getOffhandItem().getTag().getAsString();
+                                ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setTag(tag);
+                                ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, tag));
                             } catch (NullPointerException ignored) {
                                 ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setTag("{}");
+                                ((BaseContainerBlockEntityInterface) shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, "{}"));
                             }
                             be.setChanged();
                             shop.setChanged();
@@ -151,11 +155,11 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                             player.displayClientMessage(new TextComponent("Created shop with " + quantity + " " + player.getOffhandItem().getItem().getDescription().getString() + (((nbt.getString("Text1")).contains("sell")) ? " sold for $" : " bought for $") + money), true);
                             cir.setReturnValue(InteractionResult.PASS);
                         } else {
-                            player.displayClientMessage(new TextComponent("Positive quantity required"), true);
+                            player.displayClientMessage(new TextComponent("Negative prices are not allowed"), true);
                             cir.setReturnValue(InteractionResult.PASS);
                         }
                     } else {
-                        player.displayClientMessage(new TextComponent("Negative prices are not allowed"), true);
+                        player.displayClientMessage(new TextComponent("Positive quantity required"), true);
                         cir.setReturnValue(InteractionResult.PASS);
                     }
                 } catch (NumberFormatException ignored) {
