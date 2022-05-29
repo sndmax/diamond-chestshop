@@ -50,6 +50,9 @@ public class ServerPlayerGameModeMixin {
     @Shadow
     protected ServerPlayer player;
 
+    @Shadow
+    private int gameTicks;
+
     @Inject(method = "destroyAndAck", at = @At("HEAD"), cancellable = true)
     private void diamondchestshop_destroyAndAckMixin(BlockPos blockPos, ServerboundPlayerActionPacket.Action action, String string, CallbackInfo ci) {
         if (DiamondChestShopConfig.getInstance().shopProtection) {
@@ -90,13 +93,15 @@ public class ServerPlayerGameModeMixin {
         if (be instanceof SignBlockEntity) {
             CompoundTag nbt = be.getUpdateTag();
             if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                if (nbt.getString("Text1").contains("sell")) {
-                    sellShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
-                    cir.setReturnValue(InteractionResult.SUCCESS);
-                }
-                if (nbt.getString("Text1").contains("buy")) {
-                    buyShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
-                    cir.setReturnValue(InteractionResult.SUCCESS);
+                if (!itemStack.getItem().equals(Items.COMMAND_BLOCK)) {
+                    if (nbt.getString("Text1").contains("sell")) {
+                        sellShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
+                        cir.setReturnValue(InteractionResult.SUCCESS);
+                    }
+                    if (nbt.getString("Text1").contains("buy")) {
+                        buyShop(be, level.getBlockState(blockHitResult.getBlockPos()), blockHitResult.getBlockPos(), nbt);
+                        cir.setReturnValue(InteractionResult.SUCCESS);
+                    }
                 }
             }
         }
@@ -106,17 +111,19 @@ public class ServerPlayerGameModeMixin {
     private void diamondchestshop_incrementDestroyProgressMixin(BlockState blockState, BlockPos blockPos, int j, CallbackInfoReturnable<Float> cir) {
         BlockEntity be = level.getBlockEntity(blockPos);
         if (be instanceof SignBlockEntity) {
-            if (be.getUpdateTag().getBoolean("diamondchestshop_IsShop")) {
-                CompoundTag nbt = be.getUpdateTag();
-                if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
-                    BlockState state = level.getBlockState(blockPos);
-                    if (nbt.getString("Text1").contains("sell")) {
-                        sellShop(be, state, blockPos, nbt);
-                        cir.setReturnValue(0.0F);
-                    }
-                    if (nbt.getString("Text1").contains("buy")) {
-                        buyShop(be, state, blockPos, nbt);
-                        cir.setReturnValue(0.0F);
+            if (j + 1 == gameTicks) {
+                if (be.getUpdateTag().getBoolean("diamondchestshop_IsShop")) {
+                    CompoundTag nbt = be.getUpdateTag();
+                    if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || ((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
+                        BlockState state = level.getBlockState(blockPos);
+                        if (nbt.getString("Text1").contains("sell")) {
+                            sellShop(be, state, blockPos, nbt);
+                            cir.setReturnValue(0.0F);
+                        }
+                        if (nbt.getString("Text1").contains("buy")) {
+                            buyShop(be, state, blockPos, nbt);
+                            cir.setReturnValue(0.0F);
+                        }
                     }
                 }
             }
@@ -155,7 +162,7 @@ public class ServerPlayerGameModeMixin {
 
                 int itemCount = 0;
                 for (int i = 0; i < inventory.getContainerSize(); i++) {
-                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
+                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt()))) {
                         itemCount += inventory.getItem(i).getCount();
                     }
                 }
@@ -167,12 +174,12 @@ public class ServerPlayerGameModeMixin {
                 //take items from chest
                 itemCount = quantity;
                 for (int i = 0; i < inventory.getContainerSize(); i++) {
-                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()))) {
+                    if (inventory.getItem(i).getItem().equals(sellItem) && (!inventory.getItem(i).hasTag() || inventory.getItem(i).getTag().getAsString().equals(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt()))) {
                         itemCount -= inventory.getItem(i).getCount();
                         inventory.setItem(i, new ItemStack(Items.AIR));
                         if (itemCount < 0) {
                             ItemStack stack = new ItemStack(sellItem, Math.abs(itemCount));
-                            stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+                            stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt()));
                             inventory.setItem(i, stack);
                             break;
                         }
@@ -183,8 +190,8 @@ public class ServerPlayerGameModeMixin {
             //give the player the items
             while (quantity > sellItem.getMaxStackSize()) {
                 ItemStack stack = new ItemStack(sellItem, sellItem.getMaxStackSize());
-                stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
-                ItemEntity itemEntity = player.drop(stack, true);
+                stack.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt()));
+                ItemEntity itemEntity = player.drop(stack, false);
                 assert itemEntity != null;
                 itemEntity.setNoPickUpDelay();
                 itemEntity.setOwner(player.getUUID());
@@ -192,7 +199,9 @@ public class ServerPlayerGameModeMixin {
             }
 
             ItemStack stack2 = new ItemStack(sellItem, quantity);
-            stack2.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getNbt()));
+            if (!((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt().equals("{}")) {
+                stack2.setTag(DiamondChestShop.getNbtData(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getNbt()));
+            }
             ItemEntity itemEntity2 = player.drop(stack2, true);
             assert itemEntity2 != null;
             itemEntity2.setNoPickUpDelay();

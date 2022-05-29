@@ -110,7 +110,7 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                     return;
                 }
 
-                if (!(DiamondChestShop.signTextToReadable(nbt.getString("Text1")).equals("sell") || DiamondChestShop.signTextToReadable(nbt.getString("Text1")).equals("buy"))) {
+                if (!(DiamondChestShop.signTextToReadable(nbt.getString("Text1")).contains("sell") || DiamondChestShop.signTextToReadable(nbt.getString("Text1")).contains("buy"))) {
                     player.displayClientMessage(new TextComponent("The first line must be either \"Buy\" or \"Sell\""), true);
                     cir.setReturnValue(InteractionResult.PASS);
                     return;
