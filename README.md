@@ -1,5 +1,7 @@
 Chestshop mod using the diamond economy currency mod.
 
+Github Releases are likely not to work
+
 
 Fabric:
 https://modrinth.com/mod/diamond-chest-shops
