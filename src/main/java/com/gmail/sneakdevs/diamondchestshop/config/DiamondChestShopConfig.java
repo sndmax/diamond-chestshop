@@ -17,7 +17,7 @@ public class DiamondChestShopConfig implements ConfigData {
     @Comment("Note: currently doesn't protect double chests")
     public boolean shopProtectHopperMinecart = true;
 
-    @Comment("Name of the command to tell the player how to make a chestshop")
+    @Comment("Name of the command to tell the player how to make a chestshop (null to disable)")
     public String chestshopCommandName = "chestshop";
 
     @Comment("Whether or not to use the base diamond economy command")

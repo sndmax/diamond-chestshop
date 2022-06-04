@@ -11,16 +11,20 @@ import net.minecraft.network.chat.TextComponent;
 public class ChestshopCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         if (DiamondEconomyConfig.getInstance().commandName != null && DiamondChestShopConfig.getInstance().useBaseCommand) {
-            dispatcher.register(
-                    Commands.literal(DiamondEconomyConfig.getInstance().commandName)
-                            .then (
-                                    Commands.literal(DiamondChestShopConfig.getInstance().chestshopCommandName).executes(ChestshopCommand::chestshopCommand)
-                            )
-            );
+            if (DiamondChestShopConfig.getInstance().chestshopCommandName != null) {
+                dispatcher.register(
+                        Commands.literal(DiamondEconomyConfig.getInstance().commandName)
+                                .then(
+                                        Commands.literal(DiamondChestShopConfig.getInstance().chestshopCommandName).executes(ChestshopCommand::chestshopCommand)
+                                )
+                );
+            }
         } else {
-            dispatcher.register(
-                    Commands.literal(DiamondChestShopConfig.getInstance().chestshopCommandName).executes(ChestshopCommand::chestshopCommand)
-            );
+            if (DiamondChestShopConfig.getInstance().chestshopCommandName != null) {
+                dispatcher.register(
+                        Commands.literal(DiamondChestShopConfig.getInstance().chestshopCommandName).executes(ChestshopCommand::chestshopCommand)
+                );
+            }
         }
     }
 
