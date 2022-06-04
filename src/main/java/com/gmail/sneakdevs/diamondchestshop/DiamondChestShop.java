@@ -26,8 +26,6 @@ public class DiamondChestShop implements ModInitializer {
         AutoConfig.register(DiamondChestShopConfig.class, JanksonConfigSerializer::new);
     }
 
-
-
     public static String signTextToReadable(String text) {
         return text.replace("{","").replace("\"", "").replace("text", "").replace("}", "").replace(":", "").replace("$", "").replace(" ", "").toLowerCase();
     }

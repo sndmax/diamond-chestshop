@@ -40,14 +40,20 @@ public class DiamondChestShopConfig implements ConfigData {
             return 0;
         }
         int shops = getInstance().playerMaxShops;
-        if (Permissions.check(player, DiamondChestShop.MODID + ".quadrupleshops")) {
+        if (Permissions.check(player, DiamondChestShop.MODID + ".quintupleshopcount")) {
             return shops * 5;
         }
-        if (Permissions.check(player, DiamondChestShop.MODID + ".tripleshops")) {
+        if (Permissions.check(player, DiamondChestShop.MODID + ".quadrupleshopcount")) {
+            return shops * 4;
+        }
+        if (Permissions.check(player, DiamondChestShop.MODID + ".tripleshopcount")) {
             return shops * 3;
         }
-        if (Permissions.check(player, DiamondChestShop.MODID + ".doubleshops")) {
+        if (Permissions.check(player, DiamondChestShop.MODID + ".doubleshopcount")) {
             return shops * 2;
+        }
+        if (Permissions.check(player, DiamondChestShop.MODID + ".halfshopcount")) {
+            return shops / 2;
         }
         return shops;
     }
