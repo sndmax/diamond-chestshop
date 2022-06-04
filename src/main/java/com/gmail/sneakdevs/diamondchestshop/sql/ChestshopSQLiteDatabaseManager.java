@@ -50,17 +50,6 @@ public class ChestshopSQLiteDatabaseManager implements ChestshopDatabaseManager 
         return null;
     }
 
-    public int playerShopCount(String uuid) {
-        String sql = "SELECT COUNT(*) FROM chestshop WHERE uuid = '" + uuid + "'";
-        try (Connection conn = this.connect(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)){
-            rs.next();
-            return rs.getInt(1);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
     public void removeShop(int id) {
         String sql = "DELETE FROM chestshop WHERE id = ?";
         try (Connection conn = this.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){

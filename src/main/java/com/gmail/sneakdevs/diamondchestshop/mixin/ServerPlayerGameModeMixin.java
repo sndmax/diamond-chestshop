@@ -130,7 +130,7 @@ public class ServerPlayerGameModeMixin {
         }
     }
 
-    private boolean sellShop(BlockEntity be, BlockState state, BlockPos blockPos, CompoundTag nbt) {
+    private void sellShop(BlockEntity be, BlockState state, BlockPos blockPos, CompoundTag nbt) {
         try {
             int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text2")));
             int quantity1 = quantity;
@@ -144,11 +144,11 @@ public class ServerPlayerGameModeMixin {
 
             if (dm.getBalanceFromUUID(player.getStringUUID()) < money) {
                 player.displayClientMessage(new TextComponent("You don't have enough money"), true);
-                return false;
+                return;
             }
             if (dm.getBalanceFromUUID(owner) + money >= Integer.MAX_VALUE && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                 player.displayClientMessage(new TextComponent("The owner is too rich"), true);
-                return false;
+                return;
             }
 
             //check shop has item in proper quantity
@@ -169,7 +169,7 @@ public class ServerPlayerGameModeMixin {
                 }
                 if (itemCount < quantity) {
                     player.displayClientMessage(new TextComponent("The shop is sold out"), true);
-                    return false;
+                    return;
                 }
 
                 //take items from chest
@@ -214,10 +214,7 @@ public class ServerPlayerGameModeMixin {
             }
 
             player.displayClientMessage(new TextComponent("Bought " + quantity1 + " " + sellItem.getDescription().getString() + " for $" + money), true);
-            return true;
-        } catch (NumberFormatException | CommandSyntaxException ignored) {
-            return false;
-        }
+        } catch (NumberFormatException | CommandSyntaxException | NullPointerException ignored) {}
     }
 
     private boolean buyShop(BlockEntity be, BlockState state, BlockPos blockPos, CompoundTag nbt) {
@@ -321,7 +318,7 @@ public class ServerPlayerGameModeMixin {
             dm.setBalance(player.getStringUUID(), dm.getBalanceFromUUID(player.getStringUUID()) + money);
             player.displayClientMessage(new TextComponent("Sold " + quantity + " " + buyItem.getDescription().getString() + " for $" + money), true);
             return true;
-        } catch (NumberFormatException | CommandSyntaxException ignored) {
+        } catch (NumberFormatException | CommandSyntaxException | NullPointerException ignored) {
             return false;
         }
     }
