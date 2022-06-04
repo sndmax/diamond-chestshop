@@ -17,11 +17,14 @@ public class DiamondChestShopConfig implements ConfigData {
     @Comment("Note: currently doesn't protect double chests")
     public boolean shopProtectHopperMinecart = true;
 
+    @Comment("Whether or not to use the base diamond economy command")
+    public boolean useBaseCommand = false;
+
     @Comment("Name of the command to tell the player how to make a chestshop (null to disable)")
     public String chestshopCommandName = "chestshop";
 
-    @Comment("Whether or not to use the base diamond economy command")
-    public boolean useBaseCommand = false;
+    @Comment("Max number of shops a player can have at once")
+    public int playerMaxShops = 500;
 
     public static DiamondChestShopConfig getInstance() {
         return AutoConfig.getConfigHolder(DiamondChestShopConfig.class).getConfig();

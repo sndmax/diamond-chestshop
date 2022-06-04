@@ -1,6 +1,7 @@
 package com.gmail.sneakdevs.diamondchestshop.mixin;
 
 import com.gmail.sneakdevs.diamondchestshop.DiamondChestShop;
+import com.gmail.sneakdevs.diamondchestshop.config.DiamondChestShopConfig;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.BaseContainerBlockEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.ItemEntityInterface;
 import com.gmail.sneakdevs.diamondchestshop.interfaces.SignBlockEntityInterface;
@@ -119,6 +120,12 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
 
                 if (((BaseContainerBlockEntityInterface)shop).diamondchestshop_getShop()) {
                     player.displayClientMessage(new TextComponent("That chest already is a shop"), true);
+                    cir.setReturnValue(InteractionResult.PASS);
+                    return;
+                }
+
+                if (DiamondChestShopConfig.getInstance().playerMaxShops <= DiamondChestShop.getDatabaseManager().playerShopCount(player.getStringUUID())) {
+                    player.displayClientMessage(new TextComponent("You have too many shops"), true);
                     cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
