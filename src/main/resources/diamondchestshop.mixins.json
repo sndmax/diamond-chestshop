@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.gmail.sneakdevs.diamondchestshop.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "BaseContainerBlockEntityMixin",
+    "BlockItemMixin",
+    "ExplosionMixin",
+    "HopperBlockEntityMixin",
+    "ItemEntityMixin",
+    "LevelMixin",
+    "PistonBaseBlockMixin",
+    "ServerPlayerGameModeMixin",
+    "SignBlockEntityMixin",
+    "SignBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
