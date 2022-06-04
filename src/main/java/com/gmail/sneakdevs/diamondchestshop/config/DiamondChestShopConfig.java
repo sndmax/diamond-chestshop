@@ -2,9 +2,11 @@ package com.gmail.sneakdevs.diamondchestshop.config;
 
 import blue.endless.jankson.Comment;
 import com.gmail.sneakdevs.diamondchestshop.DiamondChestShop;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
+import net.minecraft.server.level.ServerPlayer;
 
 @Config(name = DiamondChestShop.MODID)
 public class DiamondChestShopConfig implements ConfigData {
@@ -18,7 +20,7 @@ public class DiamondChestShopConfig implements ConfigData {
     public boolean shopProtectHopperMinecart = true;
 
     @Comment("Whether or not to use the base diamond economy command")
-    public boolean useBaseCommand = false;
+    public boolean useBaseCommand = true;
 
     @Comment("Name of the command to tell the player how to make a chestshop (null to disable)")
     public String chestshopCommandName = "chestshop";
@@ -28,5 +30,25 @@ public class DiamondChestShopConfig implements ConfigData {
 
     public static DiamondChestShopConfig getInstance() {
         return AutoConfig.getConfigHolder(DiamondChestShopConfig.class).getConfig();
+    }
+
+    public static int getPlayerMaxShops(ServerPlayer player){
+        if (Permissions.check(player, DiamondChestShop.MODID + ".infiniteshops")) {
+            return -1;
+        }
+        if (Permissions.check(player, DiamondChestShop.MODID + ".noshops")) {
+            return 0;
+        }
+        int shops = getInstance().playerMaxShops;
+        if (Permissions.check(player, DiamondChestShop.MODID + ".quadrupleshops")) {
+            return shops * 5;
+        }
+        if (Permissions.check(player, DiamondChestShop.MODID + ".tripleshops")) {
+            return shops * 3;
+        }
+        if (Permissions.check(player, DiamondChestShop.MODID + ".doubleshops")) {
+            return shops * 2;
+        }
+        return shops;
     }
 }

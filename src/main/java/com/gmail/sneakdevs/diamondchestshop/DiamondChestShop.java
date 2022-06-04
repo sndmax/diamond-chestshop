@@ -3,7 +3,6 @@ package com.gmail.sneakdevs.diamondchestshop;
 import com.gmail.sneakdevs.diamondchestshop.config.DiamondChestShopConfig;
 import com.gmail.sneakdevs.diamondchestshop.sql.ChestshopDatabaseManager;
 import com.gmail.sneakdevs.diamondchestshop.sql.ChestshopSQLiteDatabaseManager;
-import com.gmail.sneakdevs.diamondeconomy.DiamondEconomy;
 import com.gmail.sneakdevs.diamondeconomy.DiamondUtils;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -26,6 +25,8 @@ public class DiamondChestShop implements ModInitializer {
         DiamondUtils.registerTable("CREATE TABLE IF NOT EXISTS chestshop (id integer PRIMARY KEY AUTOINCREMENT, item text NOT NULL, nbt text NOT NULL);");
         AutoConfig.register(DiamondChestShopConfig.class, JanksonConfigSerializer::new);
     }
+
+
 
     public static String signTextToReadable(String text) {
         return text.replace("{","").replace("\"", "").replace("text", "").replace("}", "").replace(":", "").replace("$", "").replace(" ", "").toLowerCase();
