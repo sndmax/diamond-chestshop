@@ -159,7 +159,7 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                                 BlockEntity be2 = world.getBlockEntity(new BlockPos(shop.getBlockPos().getX() + dir.getStepX(), shop.getBlockPos().getY(), shop.getBlockPos().getZ() + dir.getStepZ()));
                                 ((BaseContainerBlockEntityInterface)be2).diamondchestshop_setShop(true);
                             }
-                            player.displayClientMessage(Component.literal("Created shop with " + quantity + " " + player.getOffhandItem().getItem().getDescription().getString() + (((nbt.getString("Text1")).contains("sell")) ? " sold for $" : " bought for $") + money), true);
+                            player.displayClientMessage(Component.literal("Created shop with " + quantity + " " + Component.translatable(player.getOffhandItem().getItem().getDescriptionId()).getString() + ((nbt.getString("Text1")).toLowerCase().contains("sell") ? (((nbt.getString("Text1").toLowerCase().contains("buy")) ? " sold and bought" : " sold")) : " bought") + " for $" + money), true);
                         } else {
                             player.displayClientMessage(Component.literal("Negative prices are not allowed"), true);
                         }
