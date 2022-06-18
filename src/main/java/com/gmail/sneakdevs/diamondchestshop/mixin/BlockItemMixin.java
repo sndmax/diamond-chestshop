@@ -17,9 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BlockItem.class)
 public class BlockItemMixin {
     @Inject(method = "updateCustomBlockEntityTag(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)Z", at = @At("HEAD"))
-    private static void diamondchestshop_updateCustomBlockEntityTageMixin(Level world, Player player, BlockPos pos, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        if (world.getServer() != null) {
+    private static void diamondchestshop_updateCustomBlockEntityTagMixin(Level world, Player player, BlockPos pos, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        if (world.getServer() != null && player != null) {
             if (world.getBlockEntity(pos) instanceof BaseContainerBlockEntity) {
+                System.out.println("oopsie");
                 ((BaseContainerBlockEntityInterface) world.getBlockEntity(pos)).diamondchestshop_setOwner(player.getStringUUID());
             } else if (world.getBlockEntity(pos) instanceof SignBlockEntity) {
                 ((SignBlockEntityInterface) world.getBlockEntity(pos)).diamondchestshop_setOwner(player.getStringUUID());
