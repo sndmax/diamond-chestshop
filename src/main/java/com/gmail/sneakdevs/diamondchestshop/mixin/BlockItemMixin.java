@@ -20,7 +20,6 @@ public class BlockItemMixin {
     private static void diamondchestshop_updateCustomBlockEntityTagMixin(Level world, Player player, BlockPos pos, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         if (world.getServer() != null && player != null) {
             if (world.getBlockEntity(pos) instanceof BaseContainerBlockEntity) {
-                System.out.println("oopsie");
                 ((BaseContainerBlockEntityInterface) world.getBlockEntity(pos)).diamondchestshop_setOwner(player.getStringUUID());
             } else if (world.getBlockEntity(pos) instanceof SignBlockEntity) {
                 ((SignBlockEntityInterface) world.getBlockEntity(pos)).diamondchestshop_setOwner(player.getStringUUID());
