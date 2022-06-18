@@ -34,7 +34,6 @@ public class ChestshopSQLiteDatabaseManager implements ChestshopDatabaseManager 
             rs.next();
             return rs.getString(1);
         } catch (SQLException e) {
-            System.out.println(id);
             e.printStackTrace();
         }
         return null;
@@ -44,7 +43,6 @@ public class ChestshopSQLiteDatabaseManager implements ChestshopDatabaseManager 
         String sql = "SELECT nbt FROM chestshop WHERE id = " + id;
         try (Connection conn = this.connect(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)){
             rs.next();
-            System.out.println(id);
             return rs.getString(1);
         } catch (SQLException e) {
             e.printStackTrace();
