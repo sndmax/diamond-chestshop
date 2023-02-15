@@ -9,6 +9,7 @@ import com.gmail.sneakdevs.diamondeconomy.sql.DatabaseManager;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -139,7 +140,7 @@ public class ServerPlayerGameModeMixin {
             RandomizableContainerBlockEntity shop = (RandomizableContainerBlockEntity) level.getBlockEntity(hangingPos);
             assert shop != null;
             String owner = ((BaseContainerBlockEntityInterface) shop).diamondchestshop_getOwner();
-            Item sellItem = Registry.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
+            Item sellItem = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
 
             if (dm.getBalanceFromUUID(player.getStringUUID()) < money) {
                 player.displayClientMessage(Component.literal("You don't have enough money"), true);
@@ -225,7 +226,7 @@ public class ServerPlayerGameModeMixin {
             RandomizableContainerBlockEntity shop = (RandomizableContainerBlockEntity) level.getBlockEntity(hangingPos);
             assert shop != null;
             String owner = ((BaseContainerBlockEntityInterface) shop).diamondchestshop_getOwner();
-            Item buyItem = Registry.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
+            Item buyItem = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getItem()));
 
             if (dm.getBalanceFromUUID(owner) < money && !((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {
                 player.displayClientMessage(Component.literal("The owner hasn't got enough money"), true);

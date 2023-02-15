@@ -1,10 +1,10 @@
 package com.gmail.sneakdevs.diamondchestshop.config;
 
-import blue.endless.jankson.Comment;
 import com.gmail.sneakdevs.diamondchestshop.DiamondChestShop;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
 @Config(name = DiamondChestShop.MODID)
 public class DiamondChestShopConfig implements ConfigData {

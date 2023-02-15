@@ -7,7 +7,7 @@ import com.gmail.sneakdevs.diamondchestshop.interfaces.SignBlockEntityInterface;
 import com.gmail.sneakdevs.diamondeconomy.config.DiamondEconomyConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -85,7 +85,7 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
             }
 
             //create the chest shop
-            if (item.equals(Registry.ITEM.get(ResourceLocation.tryParse(DiamondEconomyConfig.getInstance().currencies[0])))) {
+            if (item.equals(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(DiamondEconomyConfig.getInstance().currencies[0])))) {
                 if (nbt.getBoolean("diamondchestshop_IsShop")) {
                     player.displayClientMessage(Component.literal("This is already a shop"), true);
                     cir.setReturnValue(InteractionResult.PASS);
@@ -130,7 +130,7 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                         if (money >= 0) {
                             ((SignBlockEntityInterface) be).diamondchestshop_setShop(true);
                             ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setShop(true);
-                            String itemStr = Registry.ITEM.getKey(player.getOffhandItem().getItem()).toString();
+                            String itemStr = BuiltInRegistries.ITEM.getKey(player.getOffhandItem().getItem()).toString();
                             ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setItem(itemStr);
                             try {
                                 String tag = player.getOffhandItem().getTag().getAsString();
