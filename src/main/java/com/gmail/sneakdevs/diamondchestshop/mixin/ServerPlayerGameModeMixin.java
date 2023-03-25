@@ -195,7 +195,6 @@ public class ServerPlayerGameModeMixin {
                 ItemEntity itemEntity = player.drop(stack, false);
                 assert itemEntity != null;
                 itemEntity.setNoPickUpDelay();
-                itemEntity.setOwner(player.getUUID());
                 quantity -= sellItem.getMaxStackSize();
             }
 
@@ -206,7 +205,6 @@ public class ServerPlayerGameModeMixin {
             ItemEntity itemEntity2 = player.drop(stack2, true);
             assert itemEntity2 != null;
             itemEntity2.setNoPickUpDelay();
-            itemEntity2.setOwner(player.getUUID());
 
             dm.setBalance(player.getStringUUID(), dm.getBalanceFromUUID(player.getStringUUID()) - money);
             if (!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) {

@@ -28,7 +28,7 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "diamondeconomy": ">=1.5.2",
-    "cloth-config2": ">=6.2.57"
+    "cloth-config2": "*"
   },
   "suggests": {
     "another-mod": "*"

@@ -38,7 +38,7 @@ public class HopperBlockEntityMixin {
     @Inject(method = "suckInItems", at = @At("HEAD"), cancellable = true)
     private static void diamondchestshop_suckInItemsMixin(Level level, Hopper hopper, CallbackInfoReturnable<Boolean> cir) {
         if (DiamondChestShopConfig.getInstance().shopProtectHopperMinecart && hopper instanceof MinecartHopper) {
-            Container container = HopperBlockEntity.getContainerAt(level, new BlockPos(hopper.getLevelX(), hopper.getLevelY() + 1.0D, hopper.getLevelZ()));
+            Container container = HopperBlockEntity.getContainerAt(level, new BlockPos((int)hopper.getLevelX(), (int)hopper.getLevelY() + 1, (int)hopper.getLevelZ()));
             if (container instanceof BaseContainerBlockEntity && ((BaseContainerBlockEntityInterface)container).diamondchestshop_getShop()) {
                 cir.setReturnValue(false);
             }
