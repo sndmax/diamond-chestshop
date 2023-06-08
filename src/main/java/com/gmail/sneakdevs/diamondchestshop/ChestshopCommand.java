@@ -29,7 +29,7 @@ public class ChestshopCommand {
     }
 
     private static int chestshopCommand(CommandContext<CommandSourceStack> ctx) {
-        ctx.getSource().sendSuccess(Component.literal(
+        ctx.getSource().sendSuccess(() -> Component.literal(
                 "To create a chest shop: \n" +
                         "1) place a chest with a sign attached \n" +
                         "2) write \"buy\" or \"sell\" on the first line \n" +

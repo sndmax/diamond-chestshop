@@ -38,7 +38,7 @@ public abstract class ItemEntityMixin extends Entity implements ItemEntityInterf
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void diamondchestshop_tickMixin(CallbackInfo ci) {
         if (diamondchestshop_isShop) {
-            if (((ItemEntity)(Object)this).level.getBlockEntity(((ItemEntity)(Object)this).blockPosition().below()) instanceof BaseContainerBlockEntity) {
+            if (((ItemEntity)(Object)this).level().getBlockEntity(((ItemEntity)(Object)this).blockPosition().below()) instanceof BaseContainerBlockEntity) {
                 ((ItemEntity)(Object)this).setDeltaMovement(0, 0, 0);
                 if (!canTick) {
                     ci.cancel();
