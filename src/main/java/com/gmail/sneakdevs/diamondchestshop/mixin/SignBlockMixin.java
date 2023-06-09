@@ -8,7 +8,6 @@ import com.gmail.sneakdevs.diamondeconomy.config.DiamondEconomyConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -69,109 +69,112 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
         if (!world.isClientSide()) {
             ItemStack itemStack = player.getItemInHand(hand);
             Item item = itemStack.getItem();
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be == null) return;
-            CompoundTag nbt = be.getUpdateTag();
+            SignBlockEntity signEntity = (SignBlockEntity)world.getBlockEntity(pos);
+            if (signEntity == null) return;
+            SignBlockEntityInterface iSign = (SignBlockEntityInterface) signEntity;
 
-            if (be.getUpdateTag().getBoolean("diamondchestshop_IsShop")) {
+            if (iSign.diamondchestshop_getShop()) {
                 //admin shops
                 if (item.equals(Items.COMMAND_BLOCK)) {
-                    ((SignBlockEntityInterface) be).diamondchestshop_setAdminShop(!((SignBlockEntityInterface) be).diamondchestshop_getAdminShop());
-                    be.setChanged();
-                    player.displayClientMessage(Component.literal((((SignBlockEntityInterface) be).diamondchestshop_getAdminShop()) ? "Created admin shop" : "Removed admin shop"), true);
+                    iSign.diamondchestshop_setAdminShop(!iSign.diamondchestshop_getAdminShop());
+                    signEntity.setChanged();
+                    player.displayClientMessage(Component.literal((iSign.diamondchestshop_getAdminShop()) ? "Created admin shop" : "Removed admin shop"), true);
                     cir.setReturnValue(InteractionResult.PASS);
                     return;
                 }
             }
 
             //create the chest shop
-            if (item.equals(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(DiamondEconomyConfig.getInstance().currencies[0])))) {
-                if (nbt.getBoolean("diamondchestshop_IsShop")) {
-                    player.displayClientMessage(Component.literal("This is already a shop"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                BlockPos hangingPos = pos.offset(state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepX(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepY(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepZ());
-                if (!(world.getBlockEntity(hangingPos) instanceof RandomizableContainerBlockEntity shop)) {
-                    player.displayClientMessage(Component.literal("Sign must be on a valid container"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                if (!nbt.getString("diamondchestshop_ShopOwner").equals(player.getStringUUID()) || !((BaseContainerBlockEntityInterface)shop).diamondchestshop_getOwner().equals(player.getStringUUID())) {
-                    player.displayClientMessage(Component.literal("You must have placed down the sign and chest"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                if (player.getOffhandItem().getItem().equals(Items.AIR)) {
-                    player.displayClientMessage(Component.literal("The sell item must be in your offhand"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                if (((BaseContainerBlockEntityInterface)shop).diamondchestshop_getShop()) {
-                    player.displayClientMessage(Component.literal("That chest already is a shop"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                if (!nbt.getString("Text1").toLowerCase().contains("sell") && !nbt.getString("Text1").toLowerCase().contains("buy")) {
-                    player.displayClientMessage(Component.literal("The first line must be either \"Buy\" or \"Sell\""), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                    return;
-                }
-
-                try {
-                    int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text2")));
-                    int money = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text3")));
-                    if (quantity >= 1) {
-                        if (money >= 0) {
-                            ((SignBlockEntityInterface) be).diamondchestshop_setShop(true);
-                            ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setShop(true);
-                            String itemStr = BuiltInRegistries.ITEM.getKey(player.getOffhandItem().getItem()).toString();
-                            ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setItem(itemStr);
-                            try {
-                                String tag = player.getOffhandItem().getTag().getAsString();
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setTag(tag);
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, tag));
-                            } catch (NullPointerException ignored) {
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setTag("{}");
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, "{}"));
-                            }
-                            be.setChanged();
-                            shop.setChanged();
-
-                            ItemEntity itemEntity = EntityType.ITEM.create(world);
-                            itemEntity.setItem(new ItemStack(player.getOffhandItem().getItem(), Math.min(quantity, player.getOffhandItem().getItem().getMaxStackSize())));
-                            itemEntity.setUnlimitedLifetime();
-                            itemEntity.setNeverPickUp();
-                            itemEntity.setInvulnerable(true);
-                            itemEntity.setNoGravity(true);
-                            itemEntity.setPos(new Vec3(hangingPos.getX() + 0.5, hangingPos.getY() + 1.05, hangingPos.getZ() + 0.5));
-                            ((ItemEntityInterface) itemEntity).diamondchestshop_setShop(true);
-                            world.addFreshEntity(itemEntity);
-                            ((SignBlockEntityInterface)be).diamondchestshop_setItemEntity(itemEntity.getUUID());
-                            BlockState shopBlock = world.getBlockState(hangingPos);
-                            if (shopBlock.getBlock().equals(Blocks.CHEST) && !ChestBlock.getBlockType(shopBlock).equals(DoubleBlockCombiner.BlockType.SINGLE)) {
-                                Direction dir = ChestBlock.getConnectedDirection(shopBlock);
-                                BlockEntity be2 = world.getBlockEntity(new BlockPos(shop.getBlockPos().getX() + dir.getStepX(), shop.getBlockPos().getY(), shop.getBlockPos().getZ() + dir.getStepZ()));
-                                ((BaseContainerBlockEntityInterface)be2).diamondchestshop_setShop(true);
-                            }
-                            player.displayClientMessage(Component.literal("Created shop with " + quantity + " " + Component.translatable(player.getOffhandItem().getItem().getDescriptionId()).getString() + ((nbt.getString("Text1")).toLowerCase().contains("sell") ? (((nbt.getString("Text1").toLowerCase().contains("buy")) ? " sold and bought" : " sold")) : " bought") + " for $" + money), true);
-                        } else {
-                            player.displayClientMessage(Component.literal("Negative prices are not allowed"), true);
-                        }
-                    } else {
-                        player.displayClientMessage(Component.literal("Positive quantity required"), true);
-                    }
-                    cir.setReturnValue(InteractionResult.PASS);
-                } catch (NumberFormatException ignored) {
-                    player.displayClientMessage(Component.literal("The second and third lines must be numbers (quantity then money)"), true);
-                    cir.setReturnValue(InteractionResult.PASS);
-                }
+            if (!item.equals(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(DiamondEconomyConfig.getInstance().currencies[0])))) {
+                return;
             }
+
+            if (iSign.diamondchestshop_getShop()) {
+                player.displayClientMessage(Component.literal("This is already a shop"), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+            BlockPos hangingPos = pos.offset(state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepX(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepY(), state.getValue(HorizontalDirectionalBlock.FACING).getOpposite().getStepZ());
+            BlockEntity chestEntity = world.getBlockEntity(hangingPos);
+            if (!(chestEntity instanceof RandomizableContainerBlockEntity shop)) {
+                player.displayClientMessage(Component.literal("Sign must be on a valid container"), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+            BaseContainerBlockEntityInterface iShop = ((BaseContainerBlockEntityInterface) shop);
+
+            if (!iSign.diamondchestshop_getOwner().equals(player.getStringUUID()) || !iShop.diamondchestshop_getOwner().equals(player.getStringUUID())) {
+                player.displayClientMessage(Component.literal("You must have placed down the sign and chest"), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+            if (player.getOffhandItem().getItem().equals(Items.AIR)) {
+                player.displayClientMessage(Component.literal("The sell item must be in your offhand"), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+            if (iShop.diamondchestshop_getShop()) {
+                player.displayClientMessage(Component.literal("That chest already is a shop"), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+            if (!signEntity.getFrontText().getMessage(0,true).getString().toLowerCase().contains("sell") && !signEntity.getFrontText().getMessage(0,true).getString().toLowerCase().contains("buy")) {
+                player.displayClientMessage(Component.literal("The first line must be either \"Buy\" or \"Sell\""), true);
+                cir.setReturnValue(InteractionResult.PASS);
+                return;
+            }
+
+                int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(signEntity.getFrontText().getMessage(1,true).getString()));
+                int money = Integer.parseInt(DiamondChestShop.signTextToReadable(signEntity.getFrontText().getMessage(2,true).getString()));
+                if (quantity >= 1) {
+                    if (money >= 0) {
+                        iSign.diamondchestshop_setShop(true);
+                        iShop.diamondchestshop_setShop(true);
+                        String itemStr = BuiltInRegistries.ITEM.getKey(player.getOffhandItem().getItem()).toString();
+                        iShop.diamondchestshop_setItem(itemStr);
+                        try {
+                            String tag = player.getOffhandItem().getTag().getAsString();
+                            iShop.diamondchestshop_setTag(tag);
+                            iShop.diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, tag));
+                        } catch (NullPointerException ignored) {
+                            iShop.diamondchestshop_setTag("{}");
+                            iShop.diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, "{}"));
+                        }
+                        signEntity.setWaxed(true);
+                        signEntity.setChanged();
+                        shop.setChanged();
+
+                        ItemEntity itemEntity = EntityType.ITEM.create(world);
+                        itemEntity.setItem(new ItemStack(player.getOffhandItem().getItem(), Math.min(quantity, player.getOffhandItem().getItem().getMaxStackSize())));
+                        itemEntity.setUnlimitedLifetime();
+                        itemEntity.setNeverPickUp();
+                        itemEntity.setInvulnerable(true);
+                        itemEntity.setNoGravity(true);
+                        itemEntity.setPos(new Vec3(hangingPos.getX() + 0.5, hangingPos.getY() + 1.05, hangingPos.getZ() + 0.5));
+                        ((ItemEntityInterface) itemEntity).diamondchestshop_setShop(true);
+                        world.addFreshEntity(itemEntity);
+                        ((SignBlockEntityInterface) signEntity).diamondchestshop_setItemEntity(itemEntity.getUUID());
+                        BlockState shopBlock = world.getBlockState(hangingPos);
+                        if (shopBlock.getBlock().equals(Blocks.CHEST) && !ChestBlock.getBlockType(shopBlock).equals(DoubleBlockCombiner.BlockType.SINGLE)) {
+                            Direction dir = ChestBlock.getConnectedDirection(shopBlock);
+                            BlockEntity be2 = world.getBlockEntity(new BlockPos(shop.getBlockPos().getX() + dir.getStepX(), shop.getBlockPos().getY(), shop.getBlockPos().getZ() + dir.getStepZ()));
+                            if (be2 != null) {
+                                ((BaseContainerBlockEntityInterface) be2).diamondchestshop_setShop(true);
+                            }
+                        }
+                        player.displayClientMessage(Component.literal("Created shop with " + quantity + " " + Component.translatable(player.getOffhandItem().getItem().getDescriptionId()).getString() + (signEntity.getFrontText().getMessage(0,true).getString().toLowerCase().contains("sell") ? (((signEntity.getFrontText().getMessage(0,true).getString().toLowerCase().contains("buy")) ? " sold and bought" : " sold")) : " bought") + " for $" + money), true);
+                    } else {
+                        player.displayClientMessage(Component.literal("Negative prices are not allowed"), true);
+                    }
+                } else {
+                    player.displayClientMessage(Component.literal("Positive quantity required"), true);
+                }
+                cir.setReturnValue(InteractionResult.PASS);
         }
     }
 }
