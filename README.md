@@ -1,3 +1,9 @@
+## Fork Changes: 
+1. Creates hologram instead of bugged item
+2. Logs all shop trades
+
+
+## Original 
 Chestshop mod using the diamond economy currency mod.
 
 
