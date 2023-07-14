@@ -69,4 +69,21 @@ public class ChestshopSQLiteDatabaseManager implements ChestshopDatabaseManager 
         }
         return -1;
     }
+
+    public void logTrade(String item, String nbt, int amount, int price, String buyer, String seller, String type, String date) {
+        String sql = "INSERT INTO chestshop_trades(item,nbt,amount,price,buyer,seller,type,date) VALUES(?,?,?,?,?,?,?,?)";
+        try (Connection conn = this.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, item);
+            pstmt.setString(2, nbt);
+            pstmt.setInt(3, amount);
+            pstmt.setInt(4, price);
+            pstmt.setString(5, buyer);
+            pstmt.setString(6, seller);
+            pstmt.setString(7, type);
+            pstmt.setString(8, date);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

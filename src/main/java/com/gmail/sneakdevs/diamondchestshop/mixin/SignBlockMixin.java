@@ -27,7 +27,6 @@ import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -58,7 +57,8 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
             }
             if (world.getBlockEntity(hangingPos) instanceof BaseContainerBlockEntity shop) {
                 ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setShop(false);
-                DiamondChestShop.getDatabaseManager().removeShop(((BaseContainerBlockEntityInterface)shop).diamondchestshop_getId());
+                DiamondChestShop.getDatabaseManager().removeShop(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getId());
+                DiamondChestShop.hologramManager.removeShopHolo(((BaseContainerBlockEntityInterface) shop).diamondchestshop_getId());
                 shop.setChanged();
             }
         }
@@ -126,6 +126,8 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                 try {
                     int quantity = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text2")));
                     int money = Integer.parseInt(DiamondChestShop.signTextToReadable(nbt.getString("Text3")));
+                    int shopId;
+
                     if (quantity >= 1) {
                         if (money >= 0) {
                             ((SignBlockEntityInterface) be).diamondchestshop_setShop(true);
@@ -134,11 +136,13 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                             ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setItem(itemStr);
                             try {
                                 String tag = player.getOffhandItem().getTag().getAsString();
+                                shopId = DiamondChestShop.getDatabaseManager().addShop(itemStr, tag);
                                 ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setTag(tag);
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, tag));
+                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(shopId);
                             } catch (NullPointerException ignored) {
+                                shopId = DiamondChestShop.getDatabaseManager().addShop(itemStr, "{}");
                                 ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setTag("{}");
-                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(DiamondChestShop.getDatabaseManager().addShop(itemStr, "{}"));
+                                ((BaseContainerBlockEntityInterface)shop).diamondchestshop_setId(shopId);
                             }
                             be.setChanged();
                             shop.setChanged();
@@ -149,7 +153,8 @@ public abstract class SignBlockMixin extends BaseEntityBlock {
                             itemEntity.setNeverPickUp();
                             itemEntity.setInvulnerable(true);
                             itemEntity.setNoGravity(true);
-                            itemEntity.setPos(new Vec3(hangingPos.getX() + 0.5, hangingPos.getY() + 1.05, hangingPos.getZ() + 0.5));
+                            //itemEntity.setPos(new Vec3(hangingPos.getX() + 0.5, hangingPos.getY() + 1.05, hangingPos.getZ() + 0.5)); -> disabled because any player can pick up created entity
+                            DiamondChestShop.hologramManager.createShopHolo(player, shopId, hangingPos);
                             ((ItemEntityInterface) itemEntity).diamondchestshop_setShop(true);
                             world.addFreshEntity(itemEntity);
                             ((SignBlockEntityInterface)be).diamondchestshop_setItemEntity(itemEntity.getUUID());
